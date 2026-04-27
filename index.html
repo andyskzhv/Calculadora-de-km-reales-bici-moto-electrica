@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Calculadora de Kilómetros Eléctrica</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#0f172a,#111827);color:#e5e7eb;padding:24px}.wrap{max-width:980px;margin:auto}.hero{margin-bottom:22px}.hero h1{margin:0;font-size:2rem}.hero p{color:#94a3b8}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.card{background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px;box-shadow:0 10px 25px rgba(0,0,0,.25)}h2{margin-top:0;font-size:1.1rem}.muted{color:#94a3b8;font-size:.95rem}input{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1e293b;color:#fff;font-size:1.1rem;margin:12px 0 16px} .result{font-size:2rem;font-weight:700;margin:10px 0}.sub{font-size:1rem;color:#93c5fd}.mini{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{background:#111827;padding:10px;border-radius:12px}.footer{margin-top:24px;color:#64748b;font-size:.9rem;text-align:center}
+</style>
+</head>
+<body>
+<div class='wrap'>
+<div class='hero'><h1>Calculadora de KM para Moto/Bici Eléctrica</h1><p>Herramienta personal para estimar lecturas reales y marcadas.</p></div>
+<div class='grid'>
+<div class='card'>
+<h2>🛵 Mapa → Lo que marcará la moto</h2>
+<p class='muted'>Introduce los km de Google Maps.</p>
+<input id='mapaInput' type='number' min='0' step='0.1' value='10'>
+<div class='result' id='motoOut'>12.9 km</div>
+<div class='sub'>Estimación del odómetro</div>
+</div>
+<div class='card'>
+<h2>🚲 Bici → Distancia estimada real</h2>
+<p class='muted'>Introduce lo que marcó la bici.</p>
+<input id='biciInput' type='number' min='0' step='0.1' value='20'>
+<div class='mini'>
+<div class='pill'><div class='muted'>Lo que diría Maps</div><div class='result' style='font-size:1.4rem' id='mapaOut'>21.7 km</div></div>
+<div class='pill'><div class='muted'>Distancia real</div><div class='result' style='font-size:1.4rem' id='realOut'>27.8 km</div></div>
+</div>
+</div>
+</div>
+<div class='footer'>Hecho para publicar en GitHub Pages • Diseño responsive</div>
+</div>
+<script>
+const a=0.779,b=-0.148;function mapaAMoto(m){return (m-b)/a}
+const factorBiciMapa=0.923,factorMapaReal=1.284,factorBiciReal=factorMapaReal/factorBiciMapa;
+function calcBici(v){return {mapa:v/factorBiciMapa,real:v*factorBiciReal}}
+function update(){let m=parseFloat(document.getElementById('mapaInput').value)||0;document.getElementById('motoOut').textContent=mapaAMoto(m).toFixed(1)+' km';let b=parseFloat(document.getElementById('biciInput').value)||0;let r=calcBici(b);document.getElementById('mapaOut').textContent=r.mapa.toFixed(1)+' km';document.getElementById('realOut').textContent=r.real.toFixed(1)+' km';}
+document.getElementById('mapaInput').addEventListener('input',update);document.getElementById('biciInput').addEventListener('input',update);update();
+</script>
+</body>
+</html>
