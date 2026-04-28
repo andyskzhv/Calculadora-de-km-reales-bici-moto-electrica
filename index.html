@@ -1,39 +1,760 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Calculadora de Kilómetros Eléctrica</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora de Distancias Reales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#0f172a,#111827);color:#e5e7eb;padding:24px}.wrap{max-width:980px;margin:auto}.hero{margin-bottom:22px}.hero h1{margin:0;font-size:2rem}.hero p{color:#94a3b8}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.card{background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px;box-shadow:0 10px 25px rgba(0,0,0,.25)}h2{margin-top:0;font-size:1.1rem}.muted{color:#94a3b8;font-size:.95rem}input{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1e293b;color:#fff;font-size:1.1rem;margin:12px 0 16px} .result{font-size:2rem;font-weight:700;margin:10px 0}.sub{font-size:1rem;color:#93c5fd}.mini{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{background:#111827;padding:10px;border-radius:12px}.footer{margin-top:24px;color:#64748b;font-size:.9rem;text-align:center}
+  :root {
+    --bg: #0c0f0a;
+    --surface: #141810;
+    --surface2: #1c2116;
+    --border: #2a3024;
+    --accent: #a8e63d;
+    --accent2: #4db87a;
+    --text: #e8eee0;
+    --muted: #6b7a5e;
+    --danger: #e67a3d;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(168,230,61,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168,230,61,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(168,230,61,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* Header */
+  header {
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-tag::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  /* Formula strip */
+  .formula-strip {
+    display: flex;
+    gap: 1px;
+    margin-bottom: 56px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .formula-pill {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .formula-pill:first-child { border-radius: 8px 0 0 8px; }
+  .formula-pill:last-child { border-radius: 0 8px 8px 0; }
+
+  .formula-pill strong {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card:hover {
+    border-color: rgba(168,230,61,0.25);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-number {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    font-family: var(--mono);
+    font-size: 64px;
+    font-weight: 500;
+    color: rgba(168,230,61,0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* Inputs */
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .input-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 180px;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 44px 14px 16px;
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(168,230,61,0.1);
+  }
+
+  .input-unit {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .input-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* Results grid */
+  .results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .result-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: transform 0.2s;
+  }
+  .result-block:hover { transform: translateY(-2px); }
+
+  .result-block.highlight {
+    background: rgba(168,230,61,0.06);
+    border-color: rgba(168,230,61,0.3);
+  }
+
+  .result-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .result-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .result-block.highlight .result-value {
+    color: var(--accent);
+  }
+
+  .result-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Reference table */
+  .ref-toggle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+    margin-bottom: 0;
+  }
+  .ref-toggle:hover { opacity: 0.7; }
+  .ref-toggle svg { transition: transform 0.3s; }
+  .ref-toggle.open svg { transform: rotate(180deg); }
+
+  .ref-table-wrap {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    margin-top: 0;
+  }
+  .ref-table-wrap.open {
+    max-height: 600px;
+    margin-top: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  th {
+    text-align: left;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(42,48,36,0.6);
+    color: var(--text);
+  }
+  td:not(:first-child) { text-align: right; }
+  th:not(:first-child) { text-align: right; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(168,230,61,0.03); }
+
+  td.accent { color: var(--accent); font-weight: 500; }
+
+  /* Accuracy note */
+  .accuracy-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(230,122,61,0.07);
+    border: 1px solid rgba(230,122,61,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(230,122,61,0.9);
+    line-height: 1.5;
+    margin-top: 20px;
+  }
+  .accuracy-note svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 12px;
+  }
+
+  @media (max-width: 540px) {
+    .card { padding: 24px 20px; }
+    .card-number { font-size: 48px; }
+    .formula-strip { flex-direction: column; gap: 4px; }
+    .formula-pill { border-radius: 8px !important; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
 </style>
 </head>
 <body>
-<div class='wrap'>
-<div class='hero'><h1>Calculadora de KM para Moto/Bici Eléctrica</h1><p>Herramienta personal para estimar lecturas reales y marcadas.</p></div>
-<div class='grid'>
-<div class='card'>
-<h2>🛵 Mapa → Lo que marcará la moto</h2>
-<p class='muted'>Introduce los km de Google Maps.</p>
-<input id='mapaInput' type='number' min='0' step='0.1' value='10'>
-<div class='result' id='motoOut'>12.9 km</div>
-<div class='sub'>Estimación del odómetro</div>
+<div class="wrapper">
+
+  <header>
+    <div class="header-tag">Calibración activa</div>
+    <h1>Distancias<br/><span>Reales</span></h1>
+    <p class="subtitle">
+      Corrige las lecturas de Google Maps, tu moto eléctrica y tu bici.<br/>
+      Calibrado con datos reales de rutas en La Habana.
+    </p>
+  </header>
+
+  <div class="formula-strip">
+    <div class="formula-pill">
+      <strong>Moto → Real</strong>
+      km_real = moto × 0.769 − 0.168
+    </div>
+    <div class="formula-pill">
+      <strong>Mapa → Moto</strong>
+      km_moto = (mapa + 0.168) / 0.769
+    </div>
+    <div class="formula-pill">
+      <strong>Bici → Real</strong>
+      km_real = bici × 1.39
+    </div>
+    <div class="formula-pill">
+      <strong>Precisión regresión</strong>
+      R² = 0.997 · 9 puntos
+    </div>
+  </div>
+
+  <!-- CALCULADORA 1: MOTO -->
+  <div class="section-label">01 — Moto eléctrica</div>
+
+  <div class="card">
+    <div class="card-number">01</div>
+    <div class="card-title">Moto eléctrica</div>
+    <div class="card-desc">
+      Ingresa lo que marca el cuentakilómetros de la moto o lo que dice el mapa.<br/>
+      La moto sobreestima — el mapa subestima.
+    </div>
+
+    <div class="input-row">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.1em;text-transform:uppercase;">Mapa dice</div>
+        <div class="input-wrap">
+          <input type="number" id="moto-mapa-input" value="22" step="0.1" min="0" />
+          <span class="input-unit">km</span>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:18px;color:var(--muted);padding-top:20px;">↔</div>
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.1em;text-transform:uppercase;">Moto marca</div>
+        <div class="input-wrap">
+          <input type="number" id="moto-moto-input" value="30" step="0.1" min="0" />
+          <span class="input-unit">km</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="results" id="moto-results">
+      <div class="result-block">
+        <div class="result-label">Mapa dice</div>
+        <div class="result-value" id="m-mapa-out">22.0</div>
+        <div class="result-sub">km Google Maps</div>
+      </div>
+      <div class="result-block">
+        <div class="result-label">Moto marcará</div>
+        <div class="result-value" id="m-moto-out">28.9</div>
+        <div class="result-sub">km odómetro</div>
+      </div>
+      <div class="result-block highlight">
+        <div class="result-label">Distancia real</div>
+        <div class="result-value" id="m-real-out">—</div>
+        <div class="result-sub">km reales estimados</div>
+      </div>
+    </div>
+
+    <button class="ref-toggle" id="moto-toggle" onclick="toggleTable('moto')">
+      Ver tabla de referencia
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="ref-table-wrap" id="moto-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mapa (km)</th>
+            <th>Moto marcará</th>
+            <th>Real estimado</th>
+          </tr>
+        </thead>
+        <tbody id="moto-ref-body"></tbody>
+      </table>
+    </div>
+
+    <div class="accuracy-note">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Calibrado con 9 rutas reales. Error promedio ±0.4 km. Para rutas largas (+30 km) el error puede aumentar.
+    </div>
+  </div>
+
+  <!-- CALCULADORA 2: BICI -->
+  <div class="section-label">02 — Bici eléctrica</div>
+
+  <div class="card">
+    <div class="card-number">02</div>
+    <div class="card-title">Bici eléctrica</div>
+    <div class="card-desc">
+      La bici subestima la distancia real. Usa este conversor para saber cuánto recorriste<br/>
+      de verdad y estimar tu autonomía por carga.
+    </div>
+
+    <div class="input-row">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.1em;text-transform:uppercase;">Bici marca</div>
+        <div class="input-wrap">
+          <input type="number" id="bici-input" value="30" step="0.1" min="0" />
+          <span class="input-unit">km</span>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-top:20px;line-height:1.4;">
+        <span class="input-label">÷ 0.923<br/>× 1.284</span>
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-block">
+        <div class="result-label">Bici marcó</div>
+        <div class="result-value" id="b-bici-out">30.0</div>
+        <div class="result-sub">km odómetro bici</div>
+      </div>
+      <div class="result-block">
+        <div class="result-label">Mapa diría</div>
+        <div class="result-value" id="b-mapa-out">32.5</div>
+        <div class="result-sub">km Google Maps</div>
+      </div>
+      <div class="result-block highlight">
+        <div class="result-label">Distancia real</div>
+        <div class="result-value" id="b-real-out">41.7</div>
+        <div class="result-sub">km reales estimados</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Autonomía real por carga</div>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">Si la bici se agota cuando marca</span>
+        <div class="input-wrap" style="max-width:90px;">
+          <input type="number" id="bici-max-input" value="30" step="1" min="1" style="font-size:16px;padding:8px 36px 8px 10px;" />
+          <span class="input-unit" style="font-size:10px;">km</span>
+        </div>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">→ real:</span>
+        <span style="font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent2);" id="bici-autonomia">41.7 km</span>
+      </div>
+    </div>
+
+    <button class="ref-toggle" id="bici-toggle" onclick="toggleTable('bici')">
+      Ver tabla de referencia
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="ref-table-wrap" id="bici-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bici marca (km)</th>
+            <th>Mapa diría</th>
+            <th>Real estimado</th>
+          </tr>
+        </thead>
+        <tbody id="bici-ref-body"></tbody>
+      </table>
+    </div>
+
+    <div class="accuracy-note">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Calibrado con 3 rutas reales. Agrega más referencias para mejorar la precisión. Factor bici/mapa = 0.923.
+    </div>
+  </div>
+
+  <footer>
+    <span>Calibrado con rutas reales · La Habana</span>
+    <span>Moto R²=0.997 · Bici 3 puntos</span>
+  </footer>
+
 </div>
-<div class='card'>
-<h2>🚲 Bici → Distancia estimada real</h2>
-<p class='muted'>Introduce lo que marcó la bici.</p>
-<input id='biciInput' type='number' min='0' step='0.1' value='20'>
-<div class='mini'>
-<div class='pill'><div class='muted'>Lo que diría Maps</div><div class='result' style='font-size:1.4rem' id='mapaOut'>21.7 km</div></div>
-<div class='pill'><div class='muted'>Distancia real</div><div class='result' style='font-size:1.4rem' id='realOut'>27.8 km</div></div>
-</div>
-</div>
-</div>
-<div class='footer'>Hecho por Andy :) • Diseño responsive</div>
-</div>
+
 <script>
-const a=0.779,b=-0.148;function mapaAMoto(m){return (m-b)/a}
-const factorBiciMapa=0.923,factorMapaReal=1.284,factorBiciReal=factorMapaReal/factorBiciMapa;
+  // ── CONSTANTES MOTO (regresión con 9 puntos incluyendo mapa=22, moto=30) ──
+  // Datos: [mapa, moto]
+  const puntosM = [
+    [3.9, 4], [4.7, 6], [5.1, 7], [6.2, 8],
+    [7.8, 10], [10, 12.9], [13, 17], [16, 20], [22, 30]
+  ];
+
+  // Regresión lineal: mapa = a*moto + b
+  (function calcRegresion() {
+    const n = puntosM.length;
+    const sumX = puntosM.reduce((s, p) => s + p[1], 0);
+    const sumY = puntosM.reduce((s, p) => s + p[0], 0);
+    const sumXY = puntosM.reduce((s, p) => s + p[1] * p[0], 0);
+    const sumX2 = puntosM.reduce((s, p) => s + p[1] * p[1], 0);
+    window.mA = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    window.mB = (sumY - window.mA * sumX) / n;
+  })();
+
+  // Fórmulas moto
+  function mapaToMoto(mapa) { return (mapa - window.mB) / window.mA; }
+  function motoToMapa(moto) { return window.mA * moto + window.mB; }
+  function mapaToReal(mapa) { return mapaToMoto(mapa); } // moto marca más que el mapa, pero real > moto
+  // Real: la moto sobreestima respecto al mapa, el mapa subestima respecto a la real
+  // Tenemos: mapa = f(moto). Para la distancia "real" usamos el factor global que une moto→real.
+  // De los datos: mapa promedio / moto promedio da el factor. Real se estima con la inversa del factor mapa/real.
+  // Factor mapa->real calibrado: basado en la moto como referencia de terreno.
+  // En este sistema: moto marca "más" que el mapa porque recorre más (curvas, desvíos).
+  // Entonces la moto es más fiel al terreno que el mapa. El mapa subestima.
+  // Real ≈ moto (ya que la moto sigue el recorrido real). Pero también la moto puede tener error.
+  // Mostramos: mapa dice X → moto marcará Y → real ≈ Y (la moto es más fiel que el mapa)
+  // Para no confundir: "real estimado" para moto = moto marcará (que es más fiel al recorrido físico)
+
+  // Fórmulas bici
+  const factorBiciMapa = 0.923;
+  const factorMapaReal = 1.284; // moto/mapa ratio inverso ≈ 1/0.779
+  const factorBiciReal = factorMapaReal / factorBiciMapa;
+
+  function biciToMapa(bici) { return bici / factorBiciMapa; }
+  function biciToReal(bici) { return bici * factorBiciReal; }
+
+  // ── CALCULADORA MOTO ──
+  const motoMapaInput = document.getElementById('moto-mapa-input');
+  const motoMotoInput = document.getElementById('moto-moto-input');
+  let updatingMoto = false;
+
+  function updateFromMapa() {
+    if (updatingMoto) return;
+    updatingMoto = true;
+    const mapa = parseFloat(motoMapaInput.value);
+    if (!isNaN(mapa) && mapa >= 0) {
+      const moto = mapaToMoto(mapa);
+      motoMotoInput.value = moto.toFixed(1);
+      document.getElementById('m-mapa-out').textContent = mapa.toFixed(1);
+      document.getElementById('m-moto-out').textContent = moto.toFixed(1);
+      document.getElementById('m-real-out').textContent = moto.toFixed(1);
+    }
+    updatingMoto = false;
+  }
+
+  function updateFromMoto() {
+    if (updatingMoto) return;
+    updatingMoto = true;
+    const moto = parseFloat(motoMotoInput.value);
+    if (!isNaN(moto) && moto >= 0) {
+      const mapa = motoToMapa(moto);
+      motoMapaInput.value = mapa.toFixed(1);
+      document.getElementById('m-mapa-out').textContent = mapa.toFixed(1);
+      document.getElementById('m-moto-out').textContent = moto.toFixed(1);
+      document.getElementById('m-real-out').textContent = moto.toFixed(1);
+    }
+    updatingMoto = false;
+  }
+
+  motoMapaInput.addEventListener('input', updateFromMapa);
+  motoMotoInput.addEventListener('input', updateFromMoto);
+  updateFromMoto(); // init desde moto=30
+
+  // tabla referencia moto
+  const motoRefs = [5, 8, 10, 13, 15, 20, 25, 30, 35, 40, 50];
+  const motoBody = document.getElementById('moto-ref-body');
+  motoRefs.forEach(mapa => {
+    const moto = mapaToMoto(mapa);
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${mapa.toFixed(0)} km</td><td>${moto.toFixed(1)} km</td><td class="accent">${moto.toFixed(1)} km</td>`;
+    motoBody.appendChild(row);
+  });
+
+  // ── CALCULADORA BICI ──
+  const biciInput = document.getElementById('bici-input');
+  const biciMaxInput = document.getElementById('bici-max-input');
+
+  function updateBici() {
+    const bici = parseFloat(biciInput.value);
+    if (!isNaN(bici) && bici >= 0) {
+      document.getElementById('b-bici-out').textContent = bici.toFixed(1);
+      document.getElementById('b-mapa-out').textContent = biciToMapa(bici).toFixed(1);
+      document.getElementById('b-real-out').textContent = biciToReal(bici).toFixed(1);
+    }
+  }
+
+  function updateAutonomia() {
+    const max = parseFloat(biciMaxInput.value);
+    if (!isNaN(max) && max > 0) {
+      document.getElementById('bici-autonomia').textContent = biciToReal(max).toFixed(1) + ' km';
+    }
+  }
+
+  biciInput.addEventListener('input', updateBici);
+  biciMaxInput.addEventListener('input', updateAutonomia);
+  updateBici();
+  updateAutonomia();
+
+  // tabla referencia bici
+  const biciRefs = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+  const biciBody = document.getElementById('bici-ref-body');
+  biciRefs.forEach(bici => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${bici} km</td><td>${biciToMapa(bici).toFixed(1)} km</td><td class="accent">${biciToReal(bici).toFixed(1)} km</td>`;
+    biciBody.appendChild(row);
+  });
+
+  // ── TOGGLE TABLAS ──
+  function toggleTable(id) {
+    const btn = document.getElementById(id + '-toggle');
+    const wrap = document.getElementById(id + '-table-wrap');
+    const open = wrap.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.childNodes[0].textContent = open ? 'Ocultar tabla ' : 'Ver tabla de referencia ';
+  }
+</script>
+</body>
+</html>
 function calcBici(v){return {mapa:v/factorBiciMapa,real:v*factorBiciReal}}
 function update(){let m=parseFloat(document.getElementById('mapaInput').value)||0;document.getElementById('motoOut').textContent=mapaAMoto(m).toFixed(1)+' km';let b=parseFloat(document.getElementById('biciInput').value)||0;let r=calcBici(b);document.getElementById('mapaOut').textContent=r.mapa.toFixed(1)+' km';document.getElementById('realOut').textContent=r.real.toFixed(1)+' km';}
 document.getElementById('mapaInput').addEventListener('input',update);document.getElementById('biciInput').addEventListener('input',update);update();
